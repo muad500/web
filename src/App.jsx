@@ -955,6 +955,7 @@ const ShowcaseSection = ({ showcase }) => {
 
 const ShowcaseDetail = ({ item, showcase }) => {
   const [activeImg, setActiveImg] = useState(0);
+  const [lightboxData, setLightboxData] = useState(null);
   const [scrollY, setScrollY] = useState(0);
   useEffect(() => { const h = () => setScrollY(window.scrollY); window.addEventListener("scroll", h); return () => window.removeEventListener("scroll", h); }, []);
   if (!item) return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}><h2 style={{ fontFamily: FONTD, color: TX, fontSize: 28, fontWeight: 700 }}>Item not found.</h2><AppleBtn onClick={() => nav("#/")}>Go back</AppleBtn></div>;
@@ -967,6 +968,7 @@ const ShowcaseDetail = ({ item, showcase }) => {
 
   return (
     <div style={{ background: BG }}>
+      {lightboxData && <Lightbox images={lightboxData.images} startIndex={lightboxData.idx} onClose={() => setLightboxData(null)} />}
       {/* Hero */}
       <div style={{ position: "relative", height: "65vh", minHeight: 400, overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: item.gif ? `url(${item.gif}) center/cover` : allMedia[activeImg] ? `url(${allMedia[activeImg]}) center/cover` : `linear-gradient(180deg, ${ic}18 0%, ${BG2} 60%, ${BG} 100%)`, transform: `translateY(${scrollY * 0.2}px)` }} />
@@ -992,56 +994,59 @@ const ShowcaseDetail = ({ item, showcase }) => {
 
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 24px 80px" }}>
         {/* Tags */}
-        <Reveal>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "32px 0 24px" }}>
-            {(item.tags || []).map(t => <span key={t} style={{ fontSize: 13, color: TX2, background: BG2, padding: "6px 16px", borderRadius: 980, fontWeight: 500 }}>{t}</span>)}
-          </div>
-        </Reveal>
-
-        {/* Description */}
-        {item.description && (
+        {(item.tags || []).length > 0 && (
           <Reveal>
-            <div style={{ background: CARDBG, borderRadius: 20, padding: 32, boxShadow: SHADOW, marginBottom: 24 }}>
-              <h2 style={{ fontFamily: FONTD, fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 12px" }}>About this work</h2>
-              <p style={{ color: TX2, fontSize: 16, lineHeight: 1.75, margin: 0 }}>{item.description}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "32px 0 24px" }}>
+              {item.tags.map(t => <span key={t} style={{ fontSize: 13, color: TX2, background: BG2, padding: "6px 16px", borderRadius: 980, fontWeight: 500 }}>{t}</span>)}
             </div>
           </Reveal>
         )}
 
-        {/* Image gallery */}
-        {allMedia.length > 0 && (
+        {/* Short description */}
+        {item.description && (
           <Reveal>
-            <div style={{ marginBottom: 24 }}>
-              <h2 style={{ fontFamily: FONTD, fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 16px" }}>Gallery</h2>
-              <div style={{ borderRadius: 20, overflow: "hidden", marginBottom: 12, height: 400, background: `url(${allMedia[activeImg]}) center/cover`, boxShadow: SHADOW }} />
-              {allMedia.length > 1 && (
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                  {allMedia.map((img, i) => (
-                    <div key={i} onClick={() => setActiveImg(i)} style={{ width: 72, height: 72, borderRadius: 12, background: `url(${img}) center/cover`, cursor: "pointer", border: `3px solid ${i === activeImg ? ic : "transparent"}`, transition: "all 0.2s", opacity: i === activeImg ? 1 : 0.6 }} />
-                  ))}
-                </div>
-              )}
-            </div>
+            <p style={{ color: TX2, fontSize: 17, lineHeight: 1.75, marginBottom: 40 }}>{item.description}</p>
           </Reveal>
         )}
 
         {/* Video embed */}
         {item.videoUrl && item.videoUrl.includes("youtube") && (
           <Reveal>
-            <div style={{ marginBottom: 24 }}>
-              <h2 style={{ fontFamily: FONTD, fontSize: 22, fontWeight: 700, color: TX, margin: "0 0 16px" }}>Video</h2>
+            <div style={{ marginBottom: 40 }}>
               <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: SHADOW, aspectRatio: "16/9" }}>
-                <iframe
-                  width="100%" height="100%"
-                  src={item.videoUrl.replace("watch?v=", "embed/")}
-                  style={{ border: "none", display: "block" }}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                <iframe width="100%" height="100%" src={item.videoUrl.replace("watch?v=", "embed/")} style={{ border: "none", display: "block" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
               </div>
             </div>
           </Reveal>
         )}
+
+        {/* Custom sections — same system as games */}
+        {(item.customSections || []).map((sec, si) => (
+          <Reveal key={si}>
+            <div style={{ marginBottom: 48 }}>
+              {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+              {sec.text && (
+                <div style={{ color: TX2, fontSize: 16, lineHeight: 1.8, marginBottom: sec.images?.length || sec.gif ? 20 : 0 }}
+                  dangerouslySetInnerHTML={{ __html: sec.text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br/>") }}
+                />
+              )}
+              {sec.gif && (
+                <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
+                  <img src={sec.gif} alt="" style={{ width: "100%", maxHeight: 400, objectFit: "cover", display: "block" }} />
+                </div>
+              )}
+              {sec.images && sec.images.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: sec.images.length === 1 ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+                  {sec.images.map((img, ii) => (
+                    <div key={ii} onClick={() => setLightboxData({ images: sec.images, idx: ii })} style={{ borderRadius: 14, overflow: "hidden", cursor: "zoom-in", boxShadow: SHADOW }}>
+                      <img src={img} alt="" style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Reveal>
+        ))}
 
         {/* Prev / Next */}
         <Reveal>
@@ -1947,7 +1952,7 @@ const AdminAnalytics = ({ data }) => {
 
 const AdminShowcase = ({ data, save }) => {
   const [editing, setEditing] = useState(null);
-  const blank = { id: "", title: "", category: "3D Art", description: "", tags: [], images: [], gif: "", videoUrl: "", downloadUrl: "", downloadLabel: "Download", year: new Date().getFullYear().toString(), status: "draft", color: "#af52de" };
+  const blank = { id: "", title: "", category: "3D Art", description: "", tags: [], images: [], gif: "", videoUrl: "", downloadUrl: "", downloadLabel: "Download", year: new Date().getFullYear().toString(), status: "draft", color: "#af52de", customSections: [] };
 
   const saveItem = (item) => {
     const exists = (data.showcase || []).find(x => x.id === item.id);
@@ -2001,6 +2006,34 @@ const AdminShowcase = ({ data, save }) => {
             <div style={{ padding: 16, borderRadius: 12, background: BG2, fontSize: 13, color: TX2, lineHeight: 1.6 }}>
               💡 Upload your file to Google Drive, Dropbox or itch.io and paste the link here. It will show as a download button on the page.
             </div>
+          </div>
+          {/* Custom Sections — same as games */}
+          <div style={{ background: CARDBG, borderRadius: 16, padding: 28, boxShadow: SHADOW, gridColumn: "1 / -1" }}>
+            <h3 style={{ fontSize: 13, fontWeight: 600, color: AC, margin: "0 0 16px", textTransform: "uppercase" }}>Content Sections</h3>
+            <div style={{ fontSize: 12, color: TX3, marginBottom: 16, lineHeight: 1.5 }}>Build your showcase page with custom sections. Each section can have a title, text, images and a GIF. Use **bold** or *italic* in text.</div>
+            <button onClick={() => u("customSections", [...(it.customSections||[]), { id: Date.now().toString(), title: "", text: "", images: [], gif: "" }])} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: AC, color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600, marginBottom: 16 }}>+ Add Section</button>
+            {(it.customSections || []).length === 0 && (
+              <div style={{ padding: 16, borderRadius: 12, background: BG2, textAlign: "center", color: TX3, fontSize: 13 }}>No sections yet</div>
+            )}
+            {(it.customSections || []).map((sec, si) => (
+              <div key={sec.id || si} style={{ background: BG2, borderRadius: 14, padding: 16, marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: TX2 }}>Section {si + 1}</span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {si > 0 && <button onClick={() => { const s=[...(it.customSections||[])]; [s[si-1],s[si]]=[s[si],s[si-1]]; u("customSections",s); }} style={{ padding:"4px 8px", borderRadius:6, border:"none", background:CARDBG, color:TX2, fontSize:11, cursor:"pointer" }}>↑</button>}
+                    {si < (it.customSections||[]).length-1 && <button onClick={() => { const s=[...(it.customSections||[])]; [s[si],s[si+1]]=[s[si+1],s[si]]; u("customSections",s); }} style={{ padding:"4px 8px", borderRadius:6, border:"none", background:CARDBG, color:TX2, fontSize:11, cursor:"pointer" }}>↓</button>}
+                    <button onClick={() => u("customSections", (it.customSections||[]).filter((_,i)=>i!==si))} style={{ padding:"4px 8px", borderRadius:6, border:"none", background:"#ff3b3012", color:"#ff3b30", fontSize:11, cursor:"pointer" }}>Remove</button>
+                  </div>
+                </div>
+                <Input label="Section Title (optional)" value={sec.title} onChange={v => { const s=[...(it.customSections||[])]; s[si]={...s[si],title:v}; u("customSections",s); }} placeholder="e.g. Process, Breakdown, Notes..." />
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ display:"block", fontSize:13, fontWeight:600, color:TX, marginBottom:6 }}>Text (optional) — **bold** or *italic*</label>
+                  <textarea value={sec.text} onChange={e => { const s=[...(it.customSections||[])]; s[si]={...s[si],text:e.target.value}; u("customSections",s); }} placeholder="Write anything..." rows={4} style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1px solid ${BORDER}`, background:CARDBG, color:TX, fontSize:14, outline:"none", fontFamily:FONT, resize:"vertical", boxSizing:"border-box" }} onFocus={e=>e.target.style.borderColor=AC} onBlur={e=>e.target.style.borderColor=BORDER} />
+                </div>
+                <ImgUpload label="Images (optional)" value={sec.images||[]} onChange={v => { const s=[...(it.customSections||[])]; s[si]={...s[si],images:typeof v==="function"?v(s[si].images||[]):v}; u("customSections",s); }} multi />
+                <ImgUpload label="GIF (optional)" value={sec.gif||""} onChange={v => { const s=[...(it.customSections||[])]; s[si]={...s[si],gif:v}; u("customSections",s); }} />
+              </div>
+            ))}
           </div>
         </div>
       </div>
