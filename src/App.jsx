@@ -1027,8 +1027,7 @@ const ShowcaseDetail = ({ item, showcase }) => {
               {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
               {sec.text && (
                 <div style={{ color: TX2, fontSize: 16, lineHeight: 1.8, marginBottom: sec.images?.length || sec.gif ? 20 : 0 }}
-                  dangerouslySetInnerHTML={{ __html: sec.text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br/>") }}
-                />
+                  dangerouslySetInnerHTML={{ __html: sec.text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br/>") }}/>
               )}
               {sec.gif && (
                 <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
