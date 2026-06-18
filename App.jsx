@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: "1:596064156298:web:8bc59c954aa61db99c8b73",
   measurementId: "G-6SDRC5G91B"
 };
-const GH_IMG = { owner: "muad500", repo: "web", path: "images", branch: "main" };
+const GH_IMG = { owner: "muad500", repo: "web", path: "images", branch: "Branch-3" };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
@@ -109,6 +109,8 @@ const GlobalStyle = () => (
       div[style*="gap: 32"][style*="flexWrap: wrap"] { gap: 20px !important; }
       div[style*="gridTemplateColumns: repeat(auto-fit, minmax(340px"] { grid-template-columns: 1fr !important; }
       div[style*="gridTemplateColumns: 1fr 1fr"][style*="gap"] { grid-template-columns: 1fr !important; }
+      .feature-row { grid-template-columns: 1fr !important; }
+      .feature-row > div { order: initial !important; }
     }
 
     @media (max-width: 480px) {
@@ -462,6 +464,66 @@ const MediaPickerModal = ({ onSelect, onClose, multi }) => {
   );
 };
 
+const IMG_EXT = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i;
+const GitHubMediaPicker = ({ onSelect, onClose, multi }) => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [selected, setSelected] = useState([]);
+  useEffect(() => {
+    let alive = true;
+    setLoading(true); setErr("");
+    fetch(`https://api.github.com/repos/${GH_IMG.owner}/${GH_IMG.repo}/contents/${GH_IMG.path}?ref=${GH_IMG.branch}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(list => { if (!alive) return; const imgs = (Array.isArray(list) ? list : []).filter(f => f.type === "file" && IMG_EXT.test(f.name)).map(f => ({ name: f.name, url: f.download_url })); setItems(imgs); setLoading(false); })
+      .catch(() => { if (alive) { setErr(`Couldn't read the "${GH_IMG.path}" folder in ${GH_IMG.owner}/${GH_IMG.repo}. Make sure the repo is public and the folder exists.`); setLoading(false); } });
+    return () => { alive = false; };
+  }, []);
+  const pick = (url) => { if (!multi) { onSelect(url); onClose(); return; } setSelected(p => p.includes(url) ? p.filter(u => u !== url) : [...p, url]); };
+  const confirmMulti = () => { if (selected.length) { onSelect(selected); onClose(); } };
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: CARDBG, borderRadius: 20, width: "100%", maxWidth: 680, maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 80px rgba(0,0,0,0.25)", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 24px", borderBottom: `1px solid ${BORDER}` }}>
+          <div style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: TX }}>🖼️ Choose an image</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {multi && selected.length > 0 && <button onClick={confirmMulti} style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: AC, color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Use {selected.length} selected</button>}
+            <button onClick={onClose} style={{ padding: "8px 12px", borderRadius: 10, border: `1px solid ${BORDER}`, background: "transparent", color: TX2, fontSize: 13, cursor: "pointer" }}>✕ Close</button>
+          </div>
+        </div>
+        <div style={{ padding: "10px 24px", borderBottom: `1px solid ${BORDER}`, fontSize: 12, color: TX3 }}>
+          Showing images from <strong style={{ color: TX2 }}>{GH_IMG.owner}/{GH_IMG.repo}/{GH_IMG.path}</strong>. Add files to that folder on GitHub and they appear here.
+        </div>
+        <div style={{ flex: 1, overflow: "auto", padding: 20 }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "60px 0", color: TX2 }}>Loading images…</div>
+          ) : err ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#ff9500", fontSize: 14, lineHeight: 1.6 }}>{err}</div>
+          ) : items.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 0", color: TX2 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🖼️</div>
+              <p>No images in that folder yet. Upload some to the <strong>{GH_IMG.path}</strong> folder on GitHub.</p>
+            </div>
+          ) : (
+            <>
+              <p style={{ fontSize: 12, color: TX3, marginBottom: 12 }}>{multi ? "Click images to select multiple, then click Use selected." : "Click an image to use it."}</p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
+                {items.map((it, i) => (
+                  <div key={i} onClick={() => pick(it.url)} title={it.name} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: `3px solid ${selected.includes(it.url) ? AC : "transparent"}`, cursor: "pointer", boxShadow: selected.includes(it.url) ? `0 0 0 2px ${AC}40` : "none" }}>
+                    <img src={it.url} alt={it.name} loading="lazy" style={{ width: "100%", height: 110, objectFit: "cover", display: "block" }} />
+                    {selected.includes(it.url) && <div style={{ position: "absolute", top: 6, left: 6, width: 22, height: 22, borderRadius: "50%", background: AC, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>✓</div>}
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "3px 6px", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.name}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ImgUpload = ({ label, value, onChange, multi }) => {
   const [open, setOpen] = useState(false);
   const handleSelect = (urlOrUrls) => {
@@ -493,7 +555,7 @@ const ImgUpload = ({ label, value, onChange, multi }) => {
       <button type="button" onClick={() => setOpen(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", height: 56, borderRadius: 12, border: `2px dashed ${BORDER}`, background: BG2, cursor: "pointer", color: TX2, fontSize: 14, fontFamily: FONT, fontWeight: 500, transition: "all 0.2s" }} onMouseEnter={e => { e.currentTarget.style.borderColor = AC; e.currentTarget.style.color = AC; }} onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = TX2; }}>
         🗂️ {multi ? "Add from Library / Upload" : "Choose from Library / Upload"}
       </button>
-      {open && <MediaPickerModal onSelect={handleSelect} onClose={() => setOpen(false)} multi={multi} />}
+      {open && <GitHubMediaPicker onSelect={handleSelect} onClose={() => setOpen(false)} multi={multi} />}
     </div>
   );
 };
@@ -583,6 +645,55 @@ const ProjectLinkButtons = ({ links = [] }) => {
         );
       })}
     </>
+  );
+};
+
+// Browser-chrome wrapper (mac dots + url bar) used by embed / browser sections
+const BrowserFrame = ({ children, url = "", compact }) => (
+  <div style={{ borderRadius: compact ? 12 : 16, overflow: "hidden", border: `1px solid ${BORDER}`, background: BG2, boxShadow: SHADOW }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: compact ? "7px 10px" : "10px 14px", background: BG3, borderBottom: `1px solid ${BORDER}` }}>
+      <div style={{ display: "flex", gap: 5 }}>
+        {["#ff5f57", "#febc2e", "#28c840"].map(c => <div key={c} style={{ width: compact ? 8 : 11, height: compact ? 8 : 11, borderRadius: "50%", background: c }} />)}
+      </div>
+      {url && <div style={{ flex: 1, marginLeft: 6, padding: compact ? "3px 10px" : "5px 14px", borderRadius: 980, background: BG4, color: TX3, fontSize: compact ? 10 : 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{url.replace(/^https?:\/\//, "")}</div>}
+    </div>
+    <div style={{ background: BG }}>{children}</div>
+  </div>
+);
+
+// Live GitHub repo card — fetches stars/lang/desc from the public API (anon, ~60/hr); degrades to a plain link
+const GitHubRepoCard = ({ url = "", role = "" }) => {
+  const slug = (() => { const m = (url || "").match(/github\.com\/([^/]+\/[^/?#]+)/i); return m ? m[1].replace(/\.git$/, "") : ""; })();
+  const [repo, setRepo] = useState(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    if (!slug) return;
+    let alive = true;
+    fetch(`https://api.github.com/repos/${slug}`)
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(d => { if (alive) setRepo(d); })
+      .catch(() => { if (alive) setFailed(true); });
+    return () => { alive = false; };
+  }, [slug]);
+  if (!slug) return null;
+  const langColors = { JavaScript: "#f1e05a", TypeScript: "#3178c6", Python: "#3572A5", "C#": "#178600", "C++": "#f34b7d", C: "#555555", HTML: "#e34c26", CSS: "#563d7c", Shell: "#89e051", Java: "#b07219", Go: "#00ADD8", Rust: "#dea584", Ruby: "#701516", Dart: "#00B4AB", Kotlin: "#A97BFF", Swift: "#F05138" };
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer" onClick={() => createTracker().then(t => t.trackClick("GitHub Repo Card", `Repo opened: ${slug}`, "🐙"))} style={{ textDecoration: "none", display: "block" }}>
+      <div style={{ border: `1px solid ${BORDER}`, borderRadius: 16, padding: 22, background: CARDBG, boxShadow: SHADOW, transition: "all 0.3s" }} onMouseEnter={e => e.currentTarget.style.boxShadow = SHADOW2} onMouseLeave={e => e.currentTarget.style.boxShadow = SHADOW}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+          <span style={{ width: 22, height: 22, display: "inline-flex", color: TX }} dangerouslySetInnerHTML={{ __html: SOCIAL_ICONS.GitHub.replace('viewBox=', 'width="22" height="22" viewBox=') }} />
+          <span style={{ fontFamily: FONTD, fontSize: 16, fontWeight: 700, color: TX, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{repo?.full_name || slug}</span>
+          {role && <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, color: AC, background: `${AC}12`, padding: "3px 10px", borderRadius: 980, flexShrink: 0 }}>{role}</span>}
+        </div>
+        <p style={{ color: TX2, fontSize: 14, lineHeight: 1.6, margin: "0 0 14px" }}>{repo?.description || "View the source and docs on GitHub."}</p>
+        <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
+          {repo?.language && <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: TX2 }}><span style={{ width: 11, height: 11, borderRadius: "50%", background: langColors[repo.language] || TX3 }} />{repo.language}</span>}
+          {repo && <span style={{ fontSize: 13, color: TX2 }}>★ {repo.stargazers_count?.toLocaleString?.() ?? 0}</span>}
+          {repo && <span style={{ fontSize: 13, color: TX2 }}>⑂ {repo.forks_count?.toLocaleString?.() ?? 0}</span>}
+          <span style={{ marginLeft: "auto", fontSize: 13, fontWeight: 600, color: AC }}>View on GitHub ›</span>
+        </div>
+      </div>
+    </a>
   );
 };
 
@@ -1035,8 +1146,59 @@ const CollabCard = ({ sec, color }) => (
   </Reveal>
 );
 
-const RenderSection = ({ sec, color, onLightbox }) => {
+const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
   if (sec.type === "collaborator") return <CollabCard sec={sec} color={color} />;
+  if (sec.type === "embed" && sec.url) {
+    const raw = sec.url.trim();
+    const embedUrl = /youtube\.com\/watch\?v=/.test(raw) ? raw.replace("watch?v=", "embed/").split("&")[0]
+      : /youtu\.be\//.test(raw) ? raw.replace("youtu.be/", "www.youtube.com/embed/")
+      : raw;
+    return (
+      <Reveal>
+        <div style={{ marginBottom: 48 }}>
+          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+          <BrowserFrame url={raw}>
+            <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 10" }}>
+              <iframe src={embedUrl} title={sec.title || "embed"} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", display: "block" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms" />
+            </div>
+          </BrowserFrame>
+          <a href={raw} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", marginTop: 10, fontSize: 13, fontWeight: 600, color: AC, textDecoration: "none" }}>Open in a new tab ›</a>
+        </div>
+      </Reveal>
+    );
+  }
+  if (sec.type === "browser") {
+    if (!sec.image) return null;
+    return (
+      <Reveal>
+        <div style={{ marginBottom: 48 }}>
+          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+          <BrowserFrame url="">
+            <img src={sec.image} alt={sec.title || ""} onClick={() => onLightbox && onLightbox([sec.image], 0)} style={{ width: "100%", display: "block", cursor: "zoom-in" }} />
+          </BrowserFrame>
+        </div>
+      </Reveal>
+    );
+  }
+  if (sec.type === "feature") {
+    const flip = (idx % 2) === 1;
+    const html = (sec.text || "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br/>");
+    return (
+      <Reveal>
+        <div className="feature-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "center", marginBottom: 48 }}>
+          {sec.image && (
+            <div style={{ order: flip ? 2 : 1, borderRadius: 16, overflow: "hidden", boxShadow: SHADOW, cursor: onLightbox ? "zoom-in" : "default" }} onClick={() => sec.image && onLightbox && onLightbox([sec.image], 0)}>
+              <img src={sec.image} alt={sec.title || ""} style={{ width: "100%", display: "block" }} />
+            </div>
+          )}
+          <div style={{ order: flip ? 1 : 2 }}>
+            {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 26, fontWeight: 700, color: TX, margin: "0 0 14px", letterSpacing: -0.3 }}>{sec.title}</h2>}
+            {sec.text && <div style={{ color: TX2, fontSize: 16, lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />}
+          </div>
+        </div>
+      </Reveal>
+    );
+  }
   return (
     <Reveal>
       <div style={{ marginBottom: 48 }}>
@@ -1070,13 +1232,16 @@ const SectionBuilder = ({ sections, onChange }) => {
   const update = (i, key, val) => { const s = [...secs]; s[i] = { ...s[i], [key]: val }; onChange(s); };
   const move = (i, dir) => { const s = [...secs]; [s[i], s[i+dir]] = [s[i+dir], s[i]]; onChange(s); };
   const remove = (i) => onChange(secs.filter((_, j) => j !== i));
-  const addSection = (type) => onChange([...secs, { id: Date.now().toString(), type: type || "text", title: "", text: "", images: [], gif: "", collabName: "", collabRole: "", collabBio: "", collabAvatar: "", collabLink: "" }]);
+  const addSection = (type) => onChange([...secs, { id: Date.now().toString(), type: type || "text", title: "", text: "", images: [], gif: "", image: "", url: "", collabName: "", collabRole: "", collabBio: "", collabAvatar: "", collabLink: "" }]);
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <label style={{ fontSize: 13, fontWeight: 600, color: TX }}>Content Sections</label>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button onClick={() => addSection("text")} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: AC, color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>+ Text Section</button>
+          <button onClick={() => addSection("feature")} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${AC}`, background: `${AC}12`, color: AC, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>+ Feature row</button>
+          <button onClick={() => addSection("browser")} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${AC}`, background: `${AC}12`, color: AC, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>+ Browser shot</button>
+          <button onClick={() => addSection("embed")} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${AC}`, background: `${AC}12`, color: AC, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>+ Embed</button>
           <button onClick={() => addSection("collaborator")} style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${GRAD1}`, background: `${GRAD1}12`, color: GRAD1, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>+ Collaborator</button>
         </div>
       </div>
@@ -1086,7 +1251,7 @@ const SectionBuilder = ({ sections, onChange }) => {
         <div key={sec.id || si} style={{ background: BG2, borderRadius: 14, padding: 16, marginBottom: 12, border: sec.type === "collaborator" ? `1px solid ${GRAD1}30` : "none" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: sec.type === "collaborator" ? GRAD1 : TX2 }}>
-              {sec.type === "collaborator" ? "👤 Collaborator" : `Section ${si + 1}`}
+              {sec.type === "collaborator" ? "👤 Collaborator" : sec.type === "feature" ? `🪟 Feature ${si + 1}` : sec.type === "browser" ? `🖥️ Browser ${si + 1}` : sec.type === "embed" ? `🔗 Embed ${si + 1}` : `Section ${si + 1}`}
             </span>
             <div style={{ display: "flex", gap: 6 }}>
               {si > 0 && <button onClick={() => move(si, -1)} style={{ padding:"4px 8px", borderRadius:6, border:"none", background:CARDBG, color:TX2, fontSize:11, cursor:"pointer" }}>↑</button>}
@@ -1104,6 +1269,26 @@ const SectionBuilder = ({ sections, onChange }) => {
               <Input label="Short Bio" value={sec.collabBio} onChange={v => update(si, "collabBio", v)} textarea rows={2} placeholder="A short line about them..." />
               <Input label="Profile Link (optional)" value={sec.collabLink} onChange={v => update(si, "collabLink", v)} placeholder="https://..." />
               <ImgUpload label="Profile Photo (optional)" value={sec.collabAvatar} onChange={v => update(si, "collabAvatar", v)} />
+            </div>
+          ) : sec.type === "embed" ? (
+            <div>
+              <Input label="Embed Title (optional)" value={sec.title} onChange={v => update(si, "title", v)} placeholder="e.g. Live Demo, Try it..." />
+              <Input label="Embed URL (live site, Hugging Face Space, YouTube…)" value={sec.url || ""} onChange={v => update(si, "url", v)} placeholder="https://..." />
+              <div style={{ padding: 12, borderRadius: 10, background: CARDBG, fontSize: 12, color: TX2, lineHeight: 1.6 }}>Tip: for Hugging Face Spaces use the <strong style={{ color: TX }}>*.hf.space</strong> embed URL. Some sites block embedding; if it stays blank, the "Open in a new tab" link still works.</div>
+            </div>
+          ) : sec.type === "feature" ? (
+            <div>
+              <Input label="Feature Heading (optional)" value={sec.title} onChange={v => update(si, "title", v)} placeholder="e.g. Real-time detection" />
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ display:"block", fontSize:13, fontWeight:600, color:TX, marginBottom:6 }}>Text (optional) — **bold** *italic*</label>
+                <textarea value={sec.text} onChange={e => update(si, "text", e.target.value)} placeholder="Describe this feature..." rows={4} style={{ width:"100%", padding:"10px 14px", borderRadius:10, border:`1px solid ${BORDER}`, background:CARDBG, color:TX, fontSize:14, outline:"none", fontFamily:FONT, resize:"vertical", boxSizing:"border-box" }} onFocus={e=>e.target.style.borderColor=AC} onBlur={e=>e.target.style.borderColor=BORDER} />
+              </div>
+              <ImgUpload label="Feature Image (alternates left / right down the page)" value={sec.image || ""} onChange={v => update(si, "image", v)} />
+            </div>
+          ) : sec.type === "browser" ? (
+            <div>
+              <Input label="Caption (optional)" value={sec.title} onChange={v => update(si, "title", v)} placeholder="e.g. The live web app" />
+              <ImgUpload label="Screenshot (shown inside a browser frame)" value={sec.image || ""} onChange={v => update(si, "image", v)} />
             </div>
           ) : (
             <div>
@@ -1180,7 +1365,7 @@ const ShowcaseDetail = ({ item, showcase }) => {
           </Reveal>
         )}
         {(item.customSections || []).map((sec, si) => (
-          <RenderSection key={si} sec={sec} color={ic} onLightbox={(imgs, ix) => setLightboxData({ images: imgs, idx: ix })} />
+          <RenderSection key={si} idx={si} sec={sec} color={ic} onLightbox={(imgs, ix) => setLightboxData({ images: imgs, idx: ix })} />
         ))}
         <Reveal>
           <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
@@ -1363,11 +1548,13 @@ const GameDetail = ({ game, games }) => {
         </div>
       </div>
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 24px" }}>
+        {game.showStats !== false && (
         <Reveal>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", padding: "36px 32px", background: CARDBG, borderRadius: 20, marginTop: -36, position: "relative", zIndex: 2, boxShadow: SHADOW }}>
             <Stat label="Dev Time" value={game.devTime || "—"} /><Stat label="Team" value={game.teamSize || "—"} /><Stat label="Engine" value={game.engine || "—"} /><Stat label="Downloads" value={game.downloads?.toLocaleString() || "—"} /><Stat label="Plays" value={game.plays?.toLocaleString() || "—"} />
           </div>
         </Reveal>
+        )}
         {game.techStack && game.techStack.length > 0 && (
           <Reveal>
             <div style={{ marginBottom: 60 }}>
@@ -1392,8 +1579,11 @@ const GameDetail = ({ game, games }) => {
             </div>
           </Reveal>
         )}
+        {game.showRepoCard !== false && (() => { const gh = (game.links || []).find(l => l.url && /github\.com/i.test(l.url)); return gh ? (
+          <Reveal><div style={{ marginBottom: 48 }}><GitHubRepoCard url={gh.url} role={game.repoRole || ""} /></div></Reveal>
+        ) : null; })()}
         {(game.customSections || []).map((sec, si) => (
-          <RenderSection key={si} sec={sec} color={gc} onLightbox={(imgs, ix) => setLightbox({ images: imgs, idx: ix })} />
+          <RenderSection key={si} idx={si} sec={sec} color={gc} onLightbox={(imgs, ix) => setLightbox({ images: imgs, idx: ix })} />
         ))}
         <Reveal><div style={{ display: "flex", gap: 16, marginBottom: 60, flexWrap: "wrap" }}>
           {prev && <div onClick={() => nav(`#/games/${prev.id}`)} style={{ flex: 1, minWidth: 220, background: CARDBG, borderRadius: 16, padding: 24, boxShadow: SHADOW, cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"} onMouseLeave={e => e.currentTarget.style.transform = ""}><p style={{ fontSize: 13, color: TX2, margin: "0 0 4px" }}>← Previous</p><h3 style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: TX, margin: 0 }}>{prev.title}</h3></div>}
@@ -1974,11 +2164,13 @@ const AdminAnalytics = ({ data }) => {
 const normalizeSections = (arr) => Array.isArray(arr)
   ? arr.map((s, i) => ({
       id: s.id || `${Date.now()}_${i}`,
-      type: s.type === "collaborator" ? "collaborator" : "text",
+      type: ["collaborator", "embed", "feature", "browser"].includes(s.type) ? s.type : "text",
       title: s.title || "",
       text: s.text || "",
       images: Array.isArray(s.images) ? s.images.filter(x => typeof x === "string") : [],
       gif: typeof s.gif === "string" ? s.gif : "",
+      image: typeof s.image === "string" ? s.image : "",
+      url: typeof s.url === "string" ? s.url : "",
       collabName: s.collabName || "", collabRole: s.collabRole || "",
       collabBio: s.collabBio || "", collabAvatar: s.collabAvatar || "", collabLink: s.collabLink || "",
     }))
@@ -2427,7 +2619,7 @@ const AdminGames = ({ data, save }) => {
   const [editing, setEditing] = useState(null);
   const [jsonText, setJsonText] = useState("");
   const [jsonMsg, setJsonMsg] = useState(null);
-  const blank = { id: "", title: "", category: "Games", tagline: "", description: "", engine: "", genre: "", platform: "", teamSize: "Solo", year: "2025", devTime: "", techStack: [], links: [], bannerImg: "", cardImages: [], cardGif: "", screenshots: [], trailerUrl: "", btsImages: [], playUrl: "", downloadUrl: "", downloads: 0, plays: 0, status: "draft", color: "#0071e3", customSections: [] };
+  const blank = { id: "", title: "", category: "Games", tagline: "", description: "", engine: "", genre: "", platform: "", teamSize: "Solo", year: "2025", devTime: "", techStack: [], links: [], bannerImg: "", cardImages: [], cardGif: "", screenshots: [], trailerUrl: "", btsImages: [], playUrl: "", downloadUrl: "", downloads: 0, plays: 0, status: "draft", color: "#0071e3", showStats: true, repoRole: "", showRepoCard: true, customSections: [] };
   const importJson = () => {
     try {
       const j = JSON.parse(jsonText.trim());
@@ -2458,6 +2650,9 @@ const AdminGames = ({ data, save }) => {
         cardImages: Array.isArray(j.cardImages) ? j.cardImages.filter(x => typeof x === "string") : p.cardImages,
         screenshots: Array.isArray(j.screenshots) ? j.screenshots.filter(x => typeof x === "string") : p.screenshots,
         btsImages: Array.isArray(j.btsImages) ? j.btsImages.filter(x => typeof x === "string") : p.btsImages,
+        showStats: typeof j.showStats === "boolean" ? j.showStats : p.showStats,
+        repoRole: j.repoRole ?? p.repoRole,
+        showRepoCard: typeof j.showRepoCard === "boolean" ? j.showRepoCard : p.showRepoCard,
         customSections: ns !== null ? ns : p.customSections,
       }));
       setJsonMsg({ ok: true, text: "Imported — fields below are filled. Review them, then click Save Project." });
@@ -2524,10 +2719,28 @@ const AdminGames = ({ data, save }) => {
               {["draft","published"].map(s => <button key={s} onClick={() => u("status", s)} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1px solid ${g.status===s?(s==="published"?"#30d158":"#ff9500"):BORDER}`, background: g.status===s?(s==="published"?"#30d15812":"#ff950012"):"transparent", color: g.status===s?(s==="published"?"#30d158":"#ff9500"):TX2, fontSize: 14, cursor: "pointer", textTransform: "capitalize" }}>{s}</button>)}
             </div>
           </div>
+          <div style={{ marginBottom: 0 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: TX, marginBottom: 8 }}>Stats bar (Dev Time / Team / Downloads / Plays on the detail page)</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[["show","Show"],["hide","Hide"]].map(([val,lab]) => { const on = (val === "show") === (g.showStats !== false); return <button key={val} onClick={() => u("showStats", val === "show")} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1px solid ${on ? AC : BORDER}`, background: on ? `${AC}12` : "transparent", color: on ? AC : TX2, fontSize: 14, cursor: "pointer" }}>{lab}</button>; })}
+            </div>
+            <div style={{ fontSize: 12, color: TX3, marginTop: 6 }}>Hide it for apps / AI projects where play counts don't apply.</div>
+          </div>
         </div>
         <div style={{ background: CARDBG, borderRadius: 16, padding: 28, boxShadow: SHADOW }}>
           <h3 style={{ fontSize: 13, fontWeight: 600, color: AC, margin: "0 0 20px", textTransform: "uppercase" }}>Links, Repos & Media</h3>
           <LinksEditor links={g.links || []} onChange={v => u("links", v)} />
+          {(g.links || []).some(l => l.url && /github\.com/i.test(l.url)) && (
+            <div style={{ marginBottom: 20, padding: 14, borderRadius: 12, background: BG2 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: TX, marginBottom: 6 }}>GitHub repo card</div>
+              <div style={{ fontSize: 12, color: TX3, marginBottom: 12 }}>A live card (stars, language, description) auto-shows on the detail page whenever a GitHub link is added above.</div>
+              <Input label="Your role on this repo (optional badge — e.g. Contributor, Team project)" value={g.repoRole || ""} onChange={v => u("repoRole", v)} placeholder="Leave blank if it's solely yours" />
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: TX, marginBottom: 8 }}>Show the repo card</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[["show","Show"],["hide","Hide"]].map(([val,lab]) => { const on = (val === "show") === (g.showRepoCard !== false); return <button key={val} onClick={() => u("showRepoCard", val === "show")} style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1px solid ${on ? AC : BORDER}`, background: on ? `${AC}12` : "transparent", color: on ? AC : TX2, fontSize: 14, cursor: "pointer" }}>{lab}</button>; })}
+              </div>
+            </div>
+          )}
           <Input label="Play / Live URL (optional — shows a primary button)" value={g.playUrl} onChange={v => u("playUrl", v)} placeholder="https://..." />
           <Input label="Download URL (optional)" value={g.downloadUrl} onChange={v => u("downloadUrl", v)} placeholder="https://..." />
           <Input label="Trailer URL (optional)" value={g.trailerUrl} onChange={v => u("trailerUrl", v)} placeholder="https://youtube.com/..." />
