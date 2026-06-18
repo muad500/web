@@ -15,7 +15,7 @@ const firebaseConfig = {
   appId: "1:596064156298:web:8bc59c954aa61db99c8b73",
   measurementId: "G-6SDRC5G91B"
 };
-const GH_IMG = { owner: "muad500", repo: "web", path: "images", branch: "Branch-3" };
+const GH_IMG = { owner: "muad500", repo: "portfolio-images", path: "images", branch: "Branch-3" };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 const auth = getAuth(firebaseApp);
