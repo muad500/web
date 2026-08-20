@@ -120,7 +120,64 @@ const GlobalStyle = () => (
   `}</style>
 );
 
+const BACKGAMMON_GAME = {
+  id: "backgammon",
+  title: "Backgammon",
+  category: "Games",
+  tagline: "Classic strategy, rebuilt for modern play.",
+  description: "A polished digital backgammon experience with online matches, an AI opponent, player progression, live turn feedback and in-game chat.",
+  engine: "Unity",
+  genre: "Strategy / Board Game",
+  platform: "PC",
+  teamSize: "Solo developer",
+  year: "2026",
+  devTime: "",
+  techStack: ["Unity", "C#", "Multiplayer", "Game AI"],
+  bannerImg: "/images/backgammon-match.webp",
+  cardImages: ["/images/backgammon-match.webp", "/images/backgammon-turn.webp"],
+  screenshots: ["/images/backgammon-match.webp", "/images/backgammon-turn.webp"],
+  links: [],
+  trailerUrl: "",
+  playUrl: "",
+  downloadUrl: "",
+  downloads: 0,
+  plays: 0,
+  status: "published",
+  color: "#ff8a00",
+  showStats: false,
+  showRepoCard: false,
+  customSections: [
+    {
+      id: "backgammon-overview",
+      type: "text",
+      title: "A complete competitive experience.",
+      text: "Backgammon brings the familiar tabletop game into a focused digital experience. Players can take on the built-in AI or meet another player online, with clear turn states, animated dice and a board designed to stay readable at a glance.\n\nThe wider game loop includes player accounts, levels, rankings, match history, coins and tracked playtime—turning individual matches into a persistent competitive journey."
+    },
+    {
+      id: "backgammon-ai",
+      type: "feature",
+      title: "Play online or challenge the AI.",
+      text: "The same board supports head-to-head matches and computer-controlled opponents. Player panels keep names and levels visible, while concise prompts make every roll and move easy to follow.",
+      image: "/images/backgammon-match.webp"
+    },
+    {
+      id: "backgammon-interface",
+      type: "feature",
+      title: "A tactile board with a modern interface.",
+      text: "Warm wood, physical-looking checkers and dice give the game a handcrafted tabletop feel. Minimal overlays keep essential actions—roll, move, menu and chat—close without covering the board.",
+      image: "/images/backgammon-turn.webp"
+    },
+    {
+      id: "backgammon-systems",
+      type: "text",
+      title: "Built beyond the board.",
+      text: "The project also includes the operational systems behind a live game: account management, player search, match results, rankings, currency and playtime tracking. Together, these systems make Backgammon more than a standalone match—they make it a service that can grow with its players."
+    }
+  ]
+};
+
 const SEED_GAMES = [
+  BACKGAMMON_GAME,
   { id: "1", title: "Neon Drift", tagline: "Outrun the city. Outrun yourself.", description: "High-speed cyberpunk racing through procedurally generated neon cityscapes with dynamic weather and AI traffic.", story: "Inspired by the neon-soaked streets of Tokyo and Hong Kong, I wanted to capture that feeling of hurtling through a living city at impossible speeds.", goal: "Build a racing game with infinite replayability through procedural generation.", learned: "Procedural generation is equal parts math and art. Layering simple rules creates the best results.", engine: "Unity", genre: "Racing", platform: "PC / Web", teamSize: "Solo", year: "2025", devTime: "4 months", techStack: ["Unity", "C#", "Shader Graph", "ProBuilder"], bannerImg: "", screenshots: [], trailerUrl: "", codeSnippet: "// Procedural city block generator", codeLang: "csharp", btsImages: [], playUrl: "#", downloadUrl: "#", downloads: 2847, plays: 12453, status: "published", color: "#af52de" },
   { id: "2", title: "Echoes of Aether", tagline: "Every realm remembers.", description: "A hand-painted metroidvania with interconnected realms and a unique echo mechanic that lets you replay ghost versions of your past actions.", story: "The concept came from a game jam theme: 'echo'. What if your past self could help your present self?", goal: "Create a metroidvania that feels genuinely new through the echo mechanic.", learned: "Visual clarity is everything — players need to instantly understand what their echo is doing.", engine: "Godot", genre: "Metroidvania", platform: "PC / Switch", teamSize: "2 (Art + Code)", year: "2025", devTime: "6 months", techStack: ["Godot", "GDScript", "Aseprite", "FMOD"], bannerImg: "", screenshots: [], trailerUrl: "", codeSnippet: "# Echo replay system", codeLang: "gdscript", btsImages: [], playUrl: "#", downloadUrl: "#", downloads: 1563, plays: 8921, status: "published", color: "#5e5ce6" },
   { id: "3", title: "Starforge", tagline: "Survive. Build. Conquer the stars.", description: "Base-building survival on a hostile alien planet with co-op multiplayer and dynamic alien ecosystems.", story: "I wanted a survival game where the environment is genuinely alive — creatures migrate, plants grow, terrain shifts.", goal: "Build a survival game where the world feels reactive to player actions.", learned: "Networking multiplayer survival is incredibly hard — client-side prediction is essential.", engine: "Unreal", genre: "Survival", platform: "PC", teamSize: "3", year: "2024", devTime: "8 months", techStack: ["Unreal Engine 5", "C++", "Blender", "Substance Painter"], bannerImg: "", screenshots: [], trailerUrl: "", codeSnippet: "// Dynamic ecosystem tick", codeLang: "cpp", btsImages: [], playUrl: "#", downloadUrl: "#", downloads: 4210, plays: 19300, status: "published", color: "#ff9500" },
@@ -128,6 +185,15 @@ const SEED_GAMES = [
   { id: "5", title: "Void Circuit", tagline: "Debug reality itself.", description: "Puzzle platformer set in a deconstructing digital world where glitches are your tools.", story: "What if the game world was breaking apart and you had to use the glitches as mechanics?", goal: "Create a puzzle game where the mechanics feel subversive and surprising.", learned: "What feels intuitive to the designer is often confusing to players — playtesting is everything.", engine: "Godot", genre: "Puzzle Platformer", platform: "PC / Web", teamSize: "Solo", year: "2024", devTime: "3 months", techStack: ["Godot", "GDScript", "Pixelorama"], bannerImg: "", screenshots: [], trailerUrl: "", codeSnippet: "# Wall clip glitch ability", codeLang: "gdscript", btsImages: [], playUrl: "#", downloadUrl: "#", downloads: 920, plays: 5430, status: "published", color: "#0071e3" },
   { id: "6", title: "Iron Bastion", tagline: "Every wall can fall.", description: "Real-time strategy with fully destructible environments and physics-based combat.", story: "RTS games treat buildings as health bars. I wanted destruction to be physical — walls crumble, towers topple.", goal: "Bring real physics destruction to the RTS genre.", learned: "Physics destruction in an RTS is a performance nightmare — LOD systems are essential.", engine: "Unreal", genre: "RTS", platform: "PC", teamSize: "4", year: "2024", devTime: "10 months", techStack: ["Unreal Engine 5", "C++", "Blender", "Houdini"], bannerImg: "", screenshots: [], trailerUrl: "", codeSnippet: "// Destruction LOD system", codeLang: "cpp", btsImages: [], playUrl: "#", downloadUrl: "#", downloads: 3750, plays: 15800, status: "published", color: "#ff375f" },
 ];
+
+// Keep shipped portfolio pieces available even when the rest of the content is
+// loaded from Firebase. An admin-edited version wins when the same id exists.
+const withBuiltInGames = (payload) => {
+  const games = Array.isArray(payload?.games) ? payload.games : [];
+  return games.some(game => game.id === BACKGAMMON_GAME.id)
+    ? payload
+    : { ...payload, games: [BACKGAMMON_GAME, ...games] };
+};
 
 const SEED_POSTS = [
   { id: "1", title: "How I Built Procedural Cities for Neon Drift", date: "2026-03-02", excerpt: "A deep dive into the algorithm behind infinite cyberpunk cityscapes using wave function collapse.", content: "", thumbnail: "", status: "published" },
@@ -244,10 +310,10 @@ const useData = () => {
       try {
         const localFull = localStorage.getItem("portfolio_data_v2_full");
         if (localFull) {
-          setData({ ...JSON.parse(localFull), loaded: true });
+          setData({ ...withBuiltInGames(JSON.parse(localFull)), loaded: true });
         } else {
           const r = await storage.get("portfolio_data_v2");
-          if (r?.value) setData({ ...JSON.parse(r.value), loaded: true });
+          if (r?.value) setData({ ...withBuiltInGames(JSON.parse(r.value)), loaded: true });
           else setData(p => ({ ...p, loaded: true }));
         }
         try {
