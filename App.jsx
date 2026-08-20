@@ -135,15 +135,21 @@ const BACKGAMMON_GAME = {
   techStack: ["Unity", "C#", "Multiplayer", "Game AI"],
   bannerImg: "/images/backgammon-match.webp",
   cardImages: ["/images/backgammon-match.webp", "/images/backgammon-turn.webp"],
-  screenshots: ["/images/backgammon-match.webp", "/images/backgammon-turn.webp"],
+  screenshots: [
+    "/images/backgammon-match.webp",
+    "/images/backgammon-turn.webp",
+    "/images/backgammon-admin-overview.webp",
+    "/images/backgammon-admin-players.webp"
+  ],
   links: [],
   trailerUrl: "",
-  playUrl: "",
+  playUrl: "https://gamonera-server.kurdimonopoly.workers.dev/",
   downloadUrl: "",
   downloads: 0,
   plays: 0,
   status: "published",
   color: "#ff8a00",
+  detailTheme: "dark",
   showStats: false,
   showRepoCard: false,
   customSections: [
@@ -172,6 +178,17 @@ const BACKGAMMON_GAME = {
       type: "text",
       title: "Built beyond the board.",
       text: "The project also includes the operational systems behind a live game: account management, player search, match results, rankings, currency and playtime tracking. Together, these systems make Backgammon more than a standalone match—they make it a service that can grow with its players."
+    },
+    {
+      id: "backgammon-admin",
+      type: "text",
+      title: "Admin and live operations.",
+      text: "A dedicated administration dashboard brings the live game data together in one place. It gives a quick overview of players, online activity, completed matches and tracked playtime, alongside detailed account, ranking, coin and last-seen information.",
+      stackImages: true,
+      images: [
+        "/images/backgammon-admin-overview.webp",
+        "/images/backgammon-admin-players.webp"
+      ]
     }
   ]
 };
@@ -1212,7 +1229,10 @@ const CollabCard = ({ sec, color }) => (
   </Reveal>
 );
 
-const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
+const RenderSection = ({ sec, color, onLightbox, idx = 0, dark = false }) => {
+  const sectionText = dark ? "#f5f5f7" : TX;
+  const sectionMuted = dark ? "#a1a1a6" : TX2;
+  const sectionShadow = dark ? "0 16px 48px rgba(0,0,0,0.45)" : SHADOW;
   if (sec.type === "collaborator") return <CollabCard sec={sec} color={color} />;
   if (sec.type === "embed" && sec.url) {
     const raw = sec.url.trim();
@@ -1222,7 +1242,7 @@ const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
     return (
       <Reveal>
         <div style={{ marginBottom: 48 }}>
-          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: sectionText, margin: "0 0 20px" }}>{sec.title}</h2>}
           <BrowserFrame url={raw}>
             <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 10" }}>
               <iframe src={embedUrl} title={sec.title || "embed"} loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", display: "block" }} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen sandbox="allow-scripts allow-same-origin allow-popups allow-forms" />
@@ -1238,7 +1258,7 @@ const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
     return (
       <Reveal>
         <div style={{ marginBottom: 48 }}>
-          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+          {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: sectionText, margin: "0 0 20px" }}>{sec.title}</h2>}
           <BrowserFrame url="">
             <img src={sec.image} alt={sec.title || ""} onClick={() => onLightbox && onLightbox([sec.image], 0)} style={{ width: "100%", display: "block", cursor: "zoom-in" }} />
           </BrowserFrame>
@@ -1253,13 +1273,13 @@ const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
       <Reveal>
         <div className="feature-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 32, alignItems: "center", marginBottom: 48 }}>
           {sec.image && (
-            <div style={{ order: flip ? 2 : 1, borderRadius: 16, overflow: "hidden", boxShadow: SHADOW, cursor: onLightbox ? "zoom-in" : "default" }} onClick={() => sec.image && onLightbox && onLightbox([sec.image], 0)}>
+            <div style={{ order: flip ? 2 : 1, borderRadius: 16, overflow: "hidden", boxShadow: sectionShadow, cursor: onLightbox ? "zoom-in" : "default" }} onClick={() => sec.image && onLightbox && onLightbox([sec.image], 0)}>
               <img src={sec.image} alt={sec.title || ""} style={{ width: "100%", display: "block" }} />
             </div>
           )}
           <div style={{ order: flip ? 1 : 2 }}>
-            {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 26, fontWeight: 700, color: TX, margin: "0 0 14px", letterSpacing: -0.3 }}>{sec.title}</h2>}
-            {sec.text && <div style={{ color: TX2, fontSize: 16, lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />}
+            {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 26, fontWeight: 700, color: sectionText, margin: "0 0 14px", letterSpacing: -0.3 }}>{sec.title}</h2>}
+            {sec.text && <div style={{ color: sectionMuted, fontSize: 16, lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />}
           </div>
         </div>
       </Reveal>
@@ -1268,9 +1288,9 @@ const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
   return (
     <Reveal>
       <div style={{ marginBottom: 48 }}>
-        {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 20px" }}>{sec.title}</h2>}
+        {sec.title && <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: sectionText, margin: "0 0 20px" }}>{sec.title}</h2>}
         {sec.text && (
-          <div style={{ color: TX2, fontSize: 16, lineHeight: 1.8, marginBottom: sec.images?.length || sec.gif ? 20 : 0 }}
+          <div style={{ color: sectionMuted, fontSize: 16, lineHeight: 1.8, marginBottom: sec.images?.length || sec.gif ? 20 : 0 }}
             dangerouslySetInnerHTML={{ __html: sec.text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\*(.+?)\*/g, "<em>$1</em>").replace(/\n/g, "<br/>") }}
           />
         )}
@@ -1280,10 +1300,10 @@ const RenderSection = ({ sec, color, onLightbox, idx = 0 }) => {
           </div>
         )}
         {sec.images && sec.images.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: sec.images.length === 1 ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: sec.stackImages || sec.images.length === 1 ? "1fr" : "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
             {sec.images.map((img, ii) => (
-              <div key={ii} onClick={() => onLightbox && onLightbox(sec.images, ii)} style={{ borderRadius: 14, overflow: "hidden", cursor: "zoom-in", boxShadow: SHADOW }}>
-                <img src={img} alt="" style={{ width: "100%", height: 220, objectFit: "cover", display: "block" }} />
+              <div key={ii} onClick={() => onLightbox && onLightbox(sec.images, ii)} style={{ borderRadius: 14, overflow: "hidden", cursor: "zoom-in", boxShadow: sectionShadow }}>
+                <img src={img} alt="" style={{ width: "100%", height: sec.stackImages ? "auto" : 220, objectFit: sec.stackImages ? "contain" : "cover", display: "block" }} />
               </div>
             ))}
           </div>
@@ -1591,21 +1611,27 @@ const GameDetail = ({ game, games }) => {
   const prev = published[idx - 1], next = published[idx + 1];
   const gc = game.color || AC;
   const allScreenshots = game.screenshots?.filter(Boolean) || [];
+  const darkDetail = game.detailTheme === "dark";
+  const pageBg = darkDetail ? "#080808" : BG;
+  const panelBg = darkDetail ? "#141416" : CARDBG;
+  const primaryText = darkDetail ? "#f5f5f7" : TX;
+  const secondaryText = darkDetail ? "#a1a1a6" : TX2;
+  const detailShadow = darkDetail ? "0 18px 50px rgba(0,0,0,0.5)" : SHADOW;
   return (
-    <div style={{ background: BG }}>
+    <div style={{ background: pageBg, color: primaryText }}>
       {lightbox !== null && (
         typeof lightbox === "object"
           ? <Lightbox images={lightbox.images} startIndex={lightbox.idx} onClose={() => setLightbox(null)} />
           : <Lightbox images={allScreenshots} startIndex={lightbox} onClose={() => setLightbox(null)} />
       )}
       <div style={{ position: "relative", height: "75vh", minHeight: 440, overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: game.bannerImg ? `url(${game.bannerImg}) center/cover` : `linear-gradient(180deg, ${gc}18 0%, ${BG2} 60%, ${BG} 100%)`, transform: `translateY(${scrollY * 0.2}px)` }} />
-        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 40%, ${BG} 100%)` }} />
-        <button onClick={() => nav("#/")} style={{ position: "absolute", top: 20, left: 24, zIndex: 10, background: "var(--glass-btn)", backdropFilter: "blur(12px)", border: "none", borderRadius: 980, padding: "10px 22px", color: TX, fontFamily: FONT, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>← Back</button>
+        <div style={{ position: "absolute", inset: 0, background: game.bannerImg ? `url(${game.bannerImg}) center/cover` : `linear-gradient(180deg, ${gc}18 0%, ${darkDetail ? "#15110c" : BG2} 60%, ${pageBg} 100%)`, transform: `translateY(${scrollY * 0.2}px)` }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,${darkDetail ? 0.08 : 0}) 25%, ${pageBg} 100%)` }} />
+        <button onClick={() => nav("#/")} style={{ position: "absolute", top: 20, left: 24, zIndex: 10, background: darkDetail ? "rgba(20,20,22,0.88)" : "var(--glass-btn)", backdropFilter: "blur(12px)", border: darkDetail ? "1px solid rgba(255,255,255,0.08)" : "none", borderRadius: 980, padding: "10px 22px", color: primaryText, fontFamily: FONT, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>← Back</button>
         <div style={{ position: "absolute", bottom: 80, left: 0, right: 0, padding: "0 24px", maxWidth: 880, margin: "0 auto", zIndex: 1 }}>
           <Reveal><div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>{[game.category, game.engine, game.genre, game.platform, game.year].filter(Boolean).map(b => <Badge key={b} color={gc}>{b}</Badge>)}</div></Reveal>
-          <Reveal delay={0.06}><h1 style={{ fontFamily: FONTD, fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 700, color: TX, margin: "0 0 8px", lineHeight: 1.06, letterSpacing: "-0.04em" }}>{game.title}.</h1></Reveal>
-          <Reveal delay={0.12}><p style={{ fontSize: "clamp(1rem, 2.2vw, 1.3rem)", color: TX2, margin: "0 0 28px", fontStyle: "italic" }}>{game.tagline}</p></Reveal>
+          <Reveal delay={0.06}><h1 style={{ fontFamily: FONTD, fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 700, color: primaryText, margin: "0 0 8px", lineHeight: 1.06, letterSpacing: "-0.04em" }}>{game.title}.</h1></Reveal>
+          <Reveal delay={0.12}><p style={{ fontSize: "clamp(1rem, 2.2vw, 1.3rem)", color: secondaryText, margin: "0 0 28px", fontStyle: "italic" }}>{game.tagline}</p></Reveal>
           <Reveal delay={0.18}><div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {game.playUrl && game.playUrl !== "#" && <AppleBtn primary color={gc} small onClick={() => { window.open(game.playUrl); createTracker().then(t => t.trackClick("Play Now", `Play Now: ${game.title}`, "▶️")); }}>Play Now</AppleBtn>}
             {game.downloadUrl && game.downloadUrl !== "#" && <AppleBtn small color={gc} onClick={() => { window.open(game.downloadUrl); createTracker().then(t => t.trackClick("Download", `Download: ${game.title}`, "⬇️")); }}>⬇ Download</AppleBtn>}
@@ -1616,7 +1642,7 @@ const GameDetail = ({ game, games }) => {
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "0 24px" }}>
         {game.showStats !== false && (
         <Reveal>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", padding: "36px 32px", background: CARDBG, borderRadius: 20, marginTop: -36, position: "relative", zIndex: 2, boxShadow: SHADOW }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 20, justifyContent: "center", padding: "36px 32px", background: panelBg, borderRadius: 20, marginTop: -36, position: "relative", zIndex: 2, boxShadow: detailShadow }}>
             <Stat label="Dev Time" value={game.devTime || "—"} /><Stat label="Team" value={game.teamSize || "—"} /><Stat label="Engine" value={game.engine || "—"} /><Stat label="Downloads" value={game.downloads?.toLocaleString() || "—"} /><Stat label="Plays" value={game.plays?.toLocaleString() || "—"} />
           </div>
         </Reveal>
@@ -1624,7 +1650,7 @@ const GameDetail = ({ game, games }) => {
         {game.techStack && game.techStack.length > 0 && (
           <Reveal>
             <div style={{ marginBottom: 60 }}>
-              <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: TX, margin: "0 0 16px" }}>Tech stack.</h2>
+              <h2 style={{ fontFamily: FONTD, fontSize: 28, fontWeight: 700, color: primaryText, margin: "0 0 16px" }}>Tech stack.</h2>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{game.techStack.map(t => <Badge key={t} color={gc}>{t}</Badge>)}</div>
             </div>
           </Reveal>
@@ -1632,7 +1658,7 @@ const GameDetail = ({ game, games }) => {
         {allScreenshots.length > 0 && (
           <Reveal>
             <div style={{ margin: "60px 0" }}>
-              <div onClick={() => setLightbox(activeImg)} style={{ borderRadius: 20, overflow: "hidden", height: 420, background: `url(${allScreenshots[activeImg]}) center/cover`, boxShadow: SHADOW, cursor: "zoom-in", marginBottom: 12, position: "relative" }}>
+              <div onClick={() => setLightbox(activeImg)} style={{ borderRadius: 20, overflow: "hidden", height: 420, background: `url(${allScreenshots[activeImg]}) center/cover`, boxShadow: detailShadow, cursor: "zoom-in", marginBottom: 12, position: "relative" }}>
                 <div style={{ position: "absolute", bottom: 12, right: 12, background: "rgba(0,0,0,0.45)", borderRadius: 8, padding: "4px 10px", fontSize: 11, color: "#fff", fontWeight: 500 }}>🔍 Click to expand</div>
               </div>
               {allScreenshots.length > 1 && (
@@ -1649,11 +1675,11 @@ const GameDetail = ({ game, games }) => {
           <Reveal><div style={{ marginBottom: 48 }}><GitHubRepoCard url={gh.url} role={game.repoRole || ""} /></div></Reveal>
         ) : null; })()}
         {(game.customSections || []).map((sec, si) => (
-          <RenderSection key={si} idx={si} sec={sec} color={gc} onLightbox={(imgs, ix) => setLightbox({ images: imgs, idx: ix })} />
+          <RenderSection key={si} idx={si} sec={sec} color={gc} dark={darkDetail} onLightbox={(imgs, ix) => setLightbox({ images: imgs, idx: ix })} />
         ))}
         <Reveal><div style={{ display: "flex", gap: 16, marginBottom: 60, flexWrap: "wrap" }}>
-          {prev && <div onClick={() => nav(`#/games/${prev.id}`)} style={{ flex: 1, minWidth: 220, background: CARDBG, borderRadius: 16, padding: 24, boxShadow: SHADOW, cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"} onMouseLeave={e => e.currentTarget.style.transform = ""}><p style={{ fontSize: 13, color: TX2, margin: "0 0 4px" }}>← Previous</p><h3 style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: TX, margin: 0 }}>{prev.title}</h3></div>}
-          {next && <div onClick={() => nav(`#/games/${next.id}`)} style={{ flex: 1, minWidth: 220, background: CARDBG, borderRadius: 16, padding: 24, boxShadow: SHADOW, cursor: "pointer", textAlign: "right" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"} onMouseLeave={e => e.currentTarget.style.transform = ""}><p style={{ fontSize: 13, color: TX2, margin: "0 0 4px" }}>Next →</p><h3 style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: TX, margin: 0 }}>{next.title}</h3></div>}
+          {prev && <div onClick={() => nav(`#/games/${prev.id}`)} style={{ flex: 1, minWidth: 220, background: panelBg, borderRadius: 16, padding: 24, boxShadow: detailShadow, cursor: "pointer" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"} onMouseLeave={e => e.currentTarget.style.transform = ""}><p style={{ fontSize: 13, color: secondaryText, margin: "0 0 4px" }}>← Previous</p><h3 style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: primaryText, margin: 0 }}>{prev.title}</h3></div>}
+          {next && <div onClick={() => nav(`#/games/${next.id}`)} style={{ flex: 1, minWidth: 220, background: panelBg, borderRadius: 16, padding: 24, boxShadow: detailShadow, cursor: "pointer", textAlign: "right" }} onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"} onMouseLeave={e => e.currentTarget.style.transform = ""}><p style={{ fontSize: 13, color: secondaryText, margin: "0 0 4px" }}>Next →</p><h3 style={{ fontFamily: FONTD, fontSize: 18, fontWeight: 700, color: primaryText, margin: 0 }}>{next.title}</h3></div>}
         </div></Reveal>
       </div>
     </div>
