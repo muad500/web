@@ -122,6 +122,7 @@ const GlobalStyle = () => (
 
 const BACKGAMMON_GAME = {
   id: "backgammon",
+  contentVersion: 2,
   title: "Backgammon",
   category: "Games",
   tagline: "The server owns the rules, not the client.",
@@ -132,7 +133,7 @@ const BACKGAMMON_GAME = {
   teamSize: "Solo developer",
   year: "2026",
   devTime: "",
-  techStack: ["Unity", "C#", "Multiplayer", "Game AI"],
+  techStack: ["Unity", "C#", "Cloudflare Workers", "Multiplayer", "Game AI"],
   bannerImg: "/images/backgammon-match.webp",
   cardImages: ["/images/backgammon-match.webp", "/images/backgammon-turn.webp"],
   screenshots: [
@@ -207,9 +208,12 @@ const SEED_GAMES = [
 // loaded from Firebase. An admin-edited version wins when the same id exists.
 const withBuiltInGames = (payload) => {
   const games = Array.isArray(payload?.games) ? payload.games : [];
-  return games.some(game => game.id === BACKGAMMON_GAME.id)
-    ? payload
-    : { ...payload, games: [BACKGAMMON_GAME, ...games] };
+  const existing = games.find(game => game.id === BACKGAMMON_GAME.id);
+  if (!existing) return { ...payload, games: [BACKGAMMON_GAME, ...games] };
+  if ((existing.contentVersion || 0) < BACKGAMMON_GAME.contentVersion) {
+    return { ...payload, games: games.map(game => game.id === BACKGAMMON_GAME.id ? BACKGAMMON_GAME : game) };
+  }
+  return payload;
 };
 
 const SEED_POSTS = [
