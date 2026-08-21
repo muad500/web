@@ -124,8 +124,8 @@ const BACKGAMMON_GAME = {
   id: "backgammon",
   title: "Backgammon",
   category: "Games",
-  tagline: "Classic strategy, rebuilt for modern play.",
-  description: "A polished digital backgammon experience with online matches, an AI opponent, player progression, live turn feedback and in-game chat.",
+  tagline: "The server owns the rules, not the client.",
+  description: "Online backgammon where a Cloudflare Worker decides every dice roll and validates every move, so neither player's client is trusted with the game. Accounts, rankings and match history behind it.",
   engine: "Unity",
   genre: "Strategy / Board Game",
   platform: "PC",
@@ -156,34 +156,34 @@ const BACKGAMMON_GAME = {
     {
       id: "backgammon-overview",
       type: "text",
-      title: "A complete competitive experience.",
-      text: "Backgammon brings the familiar tabletop game into a focused digital experience. Players can take on the built-in AI or meet another player online, with clear turn states, animated dice and a board designed to stay readable at a glance.\n\nThe wider game loop includes player accounts, levels, rankings, match history, coins and tracked playtime—turning individual matches into a persistent competitive journey."
+      title: "What it is",
+      text: "Backgammon you can play against the computer or against another person online. The board stays readable at a glance, the dice are animated, and it is always obvious whose turn it is and what is left to play.\n\nBehind a match there are accounts, levels, rankings, match history and tracked playtime, so a game counts for something once it ends."
     },
     {
       id: "backgammon-ai",
       type: "feature",
-      title: "Play online or challenge the AI.",
-      text: "The same board supports head-to-head matches and computer-controlled opponents. Player panels keep names and levels visible, while concise prompts make every roll and move easy to follow.",
+      title: "Two players, or one and a bot",
+      text: "The same board runs both. Against another person the two clients never decide anything themselves: the server rolls the dice, checks each move against the rules, and corrects either board if the two ever drift apart.",
       image: "/images/backgammon-match.webp"
     },
     {
       id: "backgammon-interface",
       type: "feature",
-      title: "A tactile board with a modern interface.",
-      text: "Warm wood, physical-looking checkers and dice give the game a handcrafted tabletop feel. Minimal overlays keep essential actions—roll, move, menu and chat—close without covering the board.",
+      title: "It should feel like a real board",
+      text: "Wood, weighted checkers, dice that tumble. The interface stays out of the way. Roll, undo and chat sit at the edges, and nothing covers the points you are trying to read. You can drag a checker across, or tap it and tap where it should go.",
       image: "/images/backgammon-turn.webp"
     },
     {
       id: "backgammon-systems",
       type: "text",
-      title: "Built beyond the board.",
-      text: "The project also includes the operational systems behind a live game: account management, player search, match results, rankings, currency and playtime tracking. Together, these systems make Backgammon more than a standalone match—they make it a service that can grow with its players."
+      title: "The parts nobody sees",
+      text: "Most of the work was not the board. It was the server that holds the position, survives a player reloading the page mid-match, freezes the clock while someone is disconnected, and refuses a turn that does not use every die the rules say it must.\n\nThat last one matters more than it sounds. If a client can quietly skip a legal move it can dodge a bad position, so the server works out the possibilities itself and rejects the turn."
     },
     {
       id: "backgammon-admin",
       type: "text",
-      title: "Admin and live operations.",
-      text: "A dedicated administration dashboard brings the live game data together in one place. It gives a quick overview of players, online activity, completed matches and tracked playtime, alongside detailed account, ranking, coin and last-seen information.",
+      title: "Admin dashboard",
+      text: "One page for the live data: who is online, how many matches have finished, and per-player accounts, rankings, coins and last-seen times.",
       stackImages: true,
       images: [
         "/images/backgammon-admin-overview.webp",
@@ -1050,48 +1050,48 @@ const About = ({ settings }) => (
   </section>
 );
 
-const SkillBar = ({ name, level, color }) => {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect(); } }, { threshold: 0.3 });
-    if (el) obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-  return (
-    <div ref={ref} style={{ marginBottom: 18 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: TX }}>{name}</span>
-        <span style={{ fontSize: 13, fontWeight: 600, color: TX2 }}>{level}%</span>
-      </div>
-      <div style={{ height: 8, background: BG2, borderRadius: 980, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: visible ? `${level}%` : "0%", background: `linear-gradient(90deg, ${color}, ${color}bb)`, borderRadius: 980, transition: "width 1.2s cubic-bezier(.25,.46,.45,.94)" }} />
-      </div>
-    </div>
-  );
-};
+const SkillChip = ({ name, color }) => (
+  <span style={{
+    display: "inline-block", fontSize: 13, fontWeight: 600, color: TX,
+    background: BG2, border: `1px solid ${color}40`, borderRadius: 980,
+    padding: "7px 13px", marginRight: 7, marginBottom: 8, whiteSpace: "nowrap"
+  }}>{name}</span>
+);
 
 const Skills = () => {
+  // No percentages. A self-scored 88% invites the question "out of what?", and the
+  // honest answer is nothing measurable — so the number tells a reader less than
+  // one line about what the tool was actually used for.
   const groups = [
-    { t: "Game Development", color: GRAD1, items: [["Unity", 92], ["C#", 88], ["PlayFab", 85]] },
-    { t: "Programming", color: GRAD2, items: [["JavaScript", 84], ["Python", 80], ["Backends / Node.js", 78]] },
-    { t: "AI & Machine Learning", color: AC, items: [["Computer Vision (YOLOv8)", 82], ["Model Training", 80], ["Data Pipelines", 75]] },
-    { t: "Cloud & Infrastructure", color: GRAD3, items: [["Microsoft Azure", 80], ["Cosmos DB", 74], ["Cloudflare", 76]] },
+    { t: "AI & agents", color: AC,
+      note: "Building on Claude, and wiring my own tools to it over MCP.",
+      items: ["Claude", "MCP", "Codex", "LLM integration", "Agent tooling", "Tool-use APIs"] },
+    { t: "Computer vision & ML", color: GRAD2,
+      note: "Trained and deployed against live camera feeds, not just notebooks.",
+      items: ["Python", "YOLOv8", "OpenCV", "Model training", "Data pipelines"] },
+    { t: "Software & games", color: GRAD1,
+      note: "C# is where I am quickest. Most of it ends up running in Unity.",
+      items: ["C#", ".NET", "Unity", "HLSL shaders", "WebGL builds", "Gameplay systems"] },
+    { t: "Backends & cloud", color: GRAD3,
+      note: "Workers, Durable Objects and D1 run the multiplayer backgammon server.",
+      items: ["Cloudflare Workers", "Durable Objects", "D1", "Node.js", "Firebase", "Stripe", "Azure"] },
   ];
   return (
     <section id="skills" style={{ padding: "120px 24px", maxWidth: 1080, margin: "0 auto" }}>
       <Reveal style={{ textAlign: "center", marginBottom: 56 }}>
         <p style={{ fontSize: 15, fontWeight: 600, color: GRAD2, marginBottom: 8 }}>Skills & Tools</p>
         <h2 style={{ fontFamily: FONTD, fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 700, color: TX, margin: 0, letterSpacing: "-0.03em" }}>My toolkit.</h2>
-        <p style={{ color: TX2, fontSize: 17, marginTop: 14, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>Where I spend my time, and how deep I go.</p>
+        <p style={{ color: TX2, fontSize: 17, marginTop: 14, maxWidth: 520, marginLeft: "auto", marginRight: "auto" }}>The tools I reach for, and what I have shipped with them.</p>
       </Reveal>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
         {groups.map((grp, gi) => (
           <Reveal key={grp.t} delay={gi * 0.08}>
             <div style={{ background: CARDBG, borderRadius: 20, padding: 32, boxShadow: SHADOW, height: "100%" }}>
-              <h3 style={{ fontSize: 13, fontWeight: 600, color: grp.color, letterSpacing: 0.5, textTransform: "uppercase", margin: "0 0 24px" }}>{grp.t}</h3>
-              {grp.items.map(([name, level]) => <SkillBar key={name} name={name} level={level} color={grp.color} />)}
+              <h3 style={{ fontSize: 13, fontWeight: 600, color: grp.color, letterSpacing: 0.5, textTransform: "uppercase", margin: "0 0 10px" }}>{grp.t}</h3>
+              <p style={{ fontSize: 14, color: TX2, margin: "0 0 18px", lineHeight: 1.5 }}>{grp.note}</p>
+              <div style={{ display: "flex", flexWrap: "wrap" }}>
+                {grp.items.map(name => <SkillChip key={name} name={name} color={grp.color} />)}
+              </div>
             </div>
           </Reveal>
         ))}
